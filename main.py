@@ -17,10 +17,11 @@ class Player:
         self.img = player_img
         self.x = self.SCREEN_WIDTH // 4
         self.g = 0.45
-        self.jump_vel = -10
+        self.jump_vel = -8
         # vars
         self.y = self.SCREEN_HEIGHT // 2
         self.vy = 0
+        self.score = 0 # for now, number of pipes crossed
 
     def move(self):
         self.vy += self.g
@@ -37,6 +38,19 @@ class Player:
     def get_mask(self):
         return pygame.mask.from_surface(self.img)
 
+    def on_screen(self):
+        # block the player from going out of screen
+        if self.y + self.img.get_height() >= self.SCREEN_HEIGHT:
+            self.y = self.SCREEN_HEIGHT - self.img.get_height()
+            self.vy = 0 # avoids edge buffering
+        elif self.y <= 0:
+            self.y = 0
+        '''if self.y <= self.SCREEN_HEIGHT and self.y >= 0:
+            return True'''
+
+    def add_score(self):
+        self.score += 1;
+
     def draw(self):
         self.screen.blit(self.img, (self.x, self.y))
         # debug, draw mask outline
@@ -45,6 +59,8 @@ class Player:
     def update(self):
         self.move()
         self.draw()
+        self.on_screen()
+        '''return self.on_screen()'''
 
 class Pipe:
 
@@ -121,6 +137,9 @@ class AllPipes:
                 self.add()
             # delete pipe if player has passed it
             if e.x + e.width + self.pass_buffer <= player.x:
+                # add to player's score
+                player.add_score()
+            if e.x + e.width <= 0:
                 # remove pair
                 self.pipes.remove(pair)
 
@@ -185,11 +204,12 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         bird.jump()
 
-            bird.update()
-            isCollided = obstacles.update(bird)
-            if isCollided:
+            is_on_screen = bird.update()
+            is_collided = obstacles.update(bird)
+            if is_collided:
                 self.run = False
-
+            '''if not is_on_screen:
+                self.run = False'''
             pygame.display.update()
 
 def message_to_screen(text, color, x, y):
