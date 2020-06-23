@@ -49,6 +49,9 @@ class DNA:
         self.vy = self.v_jump
 
     def get_rect(self):
+        """
+        Returns frame for object
+        """
         rect = self.img.get_rect()
         rect.move(self.x, self.y)
         return rect
